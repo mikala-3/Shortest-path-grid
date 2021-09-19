@@ -80,7 +80,7 @@ public class App
     }
     public static void main( String[] args )
     {
-        System.out.println( "Creating new instance");
+        System.out.println( "Creating new instance2");
         List<Character> test = new ArrayList<>();
         test.add('0');
         test.add('0');
