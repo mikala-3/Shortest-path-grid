@@ -1,7 +1,6 @@
 package com.example;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +14,8 @@ public class App
     private Map<Integer, Node> column;
     private int rowsAndColumns;
     private int sourceCell;
+    private static final int COLUMNS = 3;
+    private static final int ROWS = 2;
 
     public App(int rowsAndColumns)
     {
@@ -34,13 +35,7 @@ public class App
 
     private void checkForSourceCell(Map<Integer, List<Character>> grid)
     {
-        for (Map.Entry<Integer, List<Character>> column : grid.entrySet())
-        {
-               if (column.getValue().contains('s'))
-               {
-                   this.sourceCell = column.getKey();
-               } 
-        }
+        this.sourceCell = grid.entrySet().stream().filter(column -> column.getValue().contains('s')).mapToInt(column -> column.getKey()).sum();
     }
 
     private void traverseGrid()
@@ -49,26 +44,66 @@ public class App
         {
             if (col.equals('s'))
             {
-                goToLeft(index, 1, this.column.get(sourceCell));
-                //goToRight();
+                System.out.println(sourceCell);
+                goToLeft(index, 1, this.column.get(sourceCell), sourceCell);
+                //goToRight(index, 1, this.column.get(sourceCell), sourceCell);
                 //goUp();
-                //goDown();
+                //goDown(index, 1, this.column.get(sourceCell), sourceCell);
             }
             index++;
         }
     }
 
-    private void goToLeft(int index, int counter, Node column)
+    private void goToLeft(int index, int counter, Node column, int level)
     {
-        if (index > 0)
+        if (index > 0) 
         {
             index--;
-            column.setColumn(index, counter);
+            char charAtIndex = column.getColumn().get(index);
+            if (charAtIndex != '*')
+            {
+                column.setColumn(index, counter);
+                //call left, down up
+                goToLeft(index, counter+1, column, level);
+                if (level < ROWS)
+                {
+                    goDown(index, counter+1, this.column.get(level), level);
+                }
+
+            }
         }
-        //call left, right down up
-        if (index != 0)
+    }
+
+    private void goToRight(int index, int counter, Node column, int level)
+    {
+        if (index < COLUMNS)
         {
-            goToLeft(index, counter+1, column);
+            index++;
+            char charAtIndex = column.getColumn().get(index);
+            if (charAtIndex != '*')
+            {
+                column.setColumn(index, counter);
+                //call right down up
+                goToRight(index, counter+1, column, level);
+            }
+        }
+    }
+
+    private void goDown(int index, int counter, Node column, int level)
+    {
+        if (level < ROWS)
+        {   
+            level++;
+            char charAtIndex = this.column.get(level).getColumn().get(index);
+            if (charAtIndex != '*')
+            {
+                this.column.get(level).setColumn(index, counter);
+                //call right down up
+                //goToLeft(index-1, counter+1, this.column.get(level+1), level+1);
+                //goToRight(index+1, counter+1, this.column.get(level+1), level+1);
+                goDown(index, counter+1, this.column.get(level), level);
+
+            }
         }
     }
     private void printGrid()
@@ -85,7 +120,7 @@ public class App
         test.add('0');
         test.add('0');
         test.add('s');
-        test.add('0');
+        test.add('*');
         
         List<Character> test2 = new ArrayList<>();
         test2.add('0');
@@ -101,9 +136,9 @@ public class App
 
         Map<Integer, List<Character>> temp = new HashMap<>();
 
-        temp.put(Integer.valueOf(1), test);
-        temp.put(Integer.valueOf(2), test2);
-        temp.put(Integer.valueOf(4), test3);
+        temp.put(Integer.valueOf(0), test);
+        temp.put(Integer.valueOf(1), test2);
+        temp.put(Integer.valueOf(2), test3);
 
         App first = new App(4);
 
