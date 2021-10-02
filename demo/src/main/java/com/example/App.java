@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 /**
  * Hello world!
  *
@@ -44,8 +47,8 @@ public class App
         {
             if (col.equals('s'))
             {
-                System.out.println(sourceCell);
-                goToLeft(index, 1, this.column.get(sourceCell), sourceCell);
+                Multimap<Integer, Integer> shortestPathResult = ArrayListMultimap.create(); 
+                goToLeft(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult);
                 //goToRight(index, 1, this.column.get(sourceCell), sourceCell);
                 //goUp();
                 //goDown(index, 1, this.column.get(sourceCell), sourceCell);
@@ -54,17 +57,18 @@ public class App
         }
     }
 
-    private void goToLeft(int index, int counter, Node column, int level)
+    private void goToLeft(int index, int counter, Node column, int level, Multimap<Integer, Integer> shortestPathResult)
     {
         if (index > 0) 
         {
             index--;
             char charAtIndex = column.getColumn().get(index);
-            if (charAtIndex != '*')
+            if (charAtIndex == '0'|| charAtIndex < counter)
             {
                 column.setColumn(index, counter);
+                shortestPathResult.add()
                 //call left, down up
-                goToLeft(index, counter+1, column, level);
+                goToLeft(index, counter+1, column, level, shortestPathResult);
                 if (level < ROWS)
                 {
                     goDown(index, counter+1, this.column.get(level), level);
@@ -95,15 +99,22 @@ public class App
         {   
             level++;
             char charAtIndex = this.column.get(level).getColumn().get(index);
-            if (charAtIndex != '*')
+            if (charAtIndex == '0' || charAtIndex < counter)
             {
                 this.column.get(level).setColumn(index, counter);
                 //call right down up
-                //goToLeft(index-1, counter+1, this.column.get(level+1), level+1);
+                System.out.println("hej2"+index+counter);
+                goToLeft(index, counter+1, this.column.get(level), level);
                 //goToRight(index+1, counter+1, this.column.get(level+1), level+1);
                 goDown(index, counter+1, this.column.get(level), level);
 
             }
+        }
+        if(level == ROWS)
+        {
+            System.out.println("hej");
+            goToLeft(index, counter+1, this.column.get(level), level);
+            //goToRight(index+1, counter+1, this.column.get(level), level);
         }
     }
     private void printGrid()
@@ -117,14 +128,14 @@ public class App
     {
         System.out.println( "Creating new instance2");
         List<Character> test = new ArrayList<>();
-        test.add('0');
+        test.add('*');
         test.add('0');
         test.add('s');
         test.add('*');
         
         List<Character> test2 = new ArrayList<>();
         test2.add('0');
-        test2.add('*');
+        test2.add('0');
         test2.add('*');
         test2.add('0');
 
