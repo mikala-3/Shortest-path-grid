@@ -5,13 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
-/**
- * Hello world!
- *
- */
 public class App 
 {
     private Map<Integer, Node> column;
@@ -19,6 +12,7 @@ public class App
     private int sourceCell;
     private static final int COLUMNS = 3;
     private static final int ROWS = 2;
+    private int result = COLUMNS*ROWS;
 
     public App(int rowsAndColumns)
     {
@@ -47,7 +41,7 @@ public class App
         {
             if (col.equals('s'))
             {
-                Multimap<Integer, Integer> shortestPathResult = ArrayListMultimap.create(); 
+                Map<Integer, List<Integer>> shortestPathResult = new HashMap<>(); 
                 goToLeft(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult);
                 //goToRight(index, 1, this.column.get(sourceCell), sourceCell);
                 //goUp();
@@ -57,21 +51,29 @@ public class App
         }
     }
 
-    private void goToLeft(int index, int counter, Node column, int level, Multimap<Integer, Integer> shortestPathResult)
+    private void goToLeft(int index, int counter, Node column, int level, Map<Integer, List<Integer>> shortestPathResult)
     {
         if (index > 0) 
         {
             index--;
             char charAtIndex = column.getColumn().get(index);
-            if (charAtIndex == '0'|| charAtIndex < counter)
+            if (charAtIndex == 't')
+            {
+                if (result == 0 || result > counter)
+                {
+                    result = counter;
+                    System.out.println(result);
+                }
+            }
+            else if (charAtIndex == '0' && counter < result)
             {
                 column.setColumn(index, counter);
-                shortestPathResult.add()
+                shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
                 //call left, down up
                 goToLeft(index, counter+1, column, level, shortestPathResult);
-                if (level < ROWS)
+                if (level < ROWS && counter < result)
                 {
-                    goDown(index, counter+1, this.column.get(level), level);
+                    goDown(index, counter+1, this.column.get(level), level, shortestPathResult);
                 }
 
             }
@@ -93,27 +95,37 @@ public class App
         }
     }
 
-    private void goDown(int index, int counter, Node column, int level)
+    private void goDown(int index, int counter, Node column, int level, Map<Integer, List<Integer>> shortestPathResult)
     {
         if (level < ROWS)
         {   
             level++;
             char charAtIndex = this.column.get(level).getColumn().get(index);
-            if (charAtIndex == '0' || charAtIndex < counter)
+            shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+            if (charAtIndex == 't')
+            {
+                if (result == 0 || result > counter)
+                {
+                    result = counter;
+                    System.out.println(result);
+                }
+            }
+            else if (charAtIndex == '0' && counter < result)
             {
                 this.column.get(level).setColumn(index, counter);
                 //call right down up
-                System.out.println("hej2"+index+counter);
-                goToLeft(index, counter+1, this.column.get(level), level);
-                //goToRight(index+1, counter+1, this.column.get(level+1), level+1);
-                goDown(index, counter+1, this.column.get(level), level);
+                if (level < ROWS && counter < result)
+                {
+                    goToLeft(index, counter+1, this.column.get(level), level, shortestPathResult);
+                    //goToRight(index+1, counter+1, this.column.get(level+1), level+1);
+                    goDown(index, counter+1, this.column.get(level), level, shortestPathResult);
+                }
 
             }
         }
         if(level == ROWS)
         {
-            System.out.println("hej");
-            goToLeft(index, counter+1, this.column.get(level), level);
+            goToLeft(index, counter+1, this.column.get(level), level, shortestPathResult);
             //goToRight(index+1, counter+1, this.column.get(level), level);
         }
     }
