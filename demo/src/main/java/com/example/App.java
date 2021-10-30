@@ -13,6 +13,9 @@ public class App
     private static final int COLUMNS = 3;
     private static final int ROWS = 2;
     private int result = COLUMNS*ROWS;
+    private final static char TARGET = 't';
+    private final static char SOURCE = 's';
+    private final static char VALID_INDEX = '0';
 
     public App(int rowsAndColumns)
     {
@@ -39,7 +42,7 @@ public class App
     {   int index = 0;
         for (Character col : this.column.get(sourceCell).getColumn())
         {
-            if (col.equals('s'))
+            if (col.equals(SOURCE))
             {
                 Map<Integer, List<Integer>> shortestPathResult = new HashMap<>(); 
                 goToLeft(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult);
@@ -57,21 +60,21 @@ public class App
         {
             index--;
             char charAtIndex = column.getColumn().get(index);
-            if (charAtIndex == 't')
+            if (isIndexAtCharTarget(charAtIndex))
             {
-                if (result == 0 || result > counter)
+                if (isTraverseLessThanShortestPath(counter))
                 {
                     result = counter;
                     System.out.println(result);
+                    System.out.println(shortestPathResult);
                 }
             }
-            else if (charAtIndex == '0' && counter < result)
+            else if (isIndexValidAndTraverseLessThanShortestPath(charAtIndex, counter))
             {
-                column.setColumn(index, counter);
                 shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
                 //call left, down up
                 goToLeft(index, counter+1, column, level, shortestPathResult);
-                if (level < ROWS && counter < result)
+                if (isTraverseLessThanShortestPath(counter))
                 {
                     goDown(index, counter+1, this.column.get(level), level, shortestPathResult);
                 }
@@ -80,17 +83,29 @@ public class App
         }
     }
 
-    private void goToRight(int index, int counter, Node column, int level)
+    private void goToRight(int index, int counter, Node column, int level, Map<Integer, List<Integer>> shortestPathResult)
     {
-        if (index < COLUMNS)
+        if (index < COLUMNS) 
         {
             index++;
             char charAtIndex = column.getColumn().get(index);
-            if (charAtIndex != '*')
+            if (isIndexAtCharTarget(charAtIndex))
             {
-                column.setColumn(index, counter);
-                //call right down up
-                goToRight(index, counter+1, column, level);
+                if (isTraverseLessThanShortestPath(counter))
+                {
+                    result = counter;
+                    System.out.println(result);
+                    System.out.println(shortestPathResult);
+                }
+            }
+            else if (isIndexValidAndTraverseLessThanShortestPath(charAtIndex, counter))
+            {
+                shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                goToRight(index, counter+1, column, level, shortestPathResult);
+                if (isTraverseLessThanShortestPath(counter))
+                {
+                    goDown(index, counter+1, this.column.get(level), level, shortestPathResult);
+                }
             }
         }
     }
@@ -101,33 +116,43 @@ public class App
         {   
             level++;
             char charAtIndex = this.column.get(level).getColumn().get(index);
-            shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
-            if (charAtIndex == 't')
+            if (isIndexAtCharTarget(charAtIndex))
             {
-                if (result == 0 || result > counter)
+                if (isTraverseLessThanShortestPath(counter))
                 {
+                    shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
                     result = counter;
                     System.out.println(result);
+                    System.out.println(shortestPathResult);
                 }
             }
-            else if (charAtIndex == '0' && counter < result)
+            else if (isIndexValidAndTraverseLessThanShortestPath(charAtIndex, counter))
             {
-                this.column.get(level).setColumn(index, counter);
-                //call right down up
+                shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                goToLeft(index, counter+1, this.column.get(level), level, shortestPathResult);
+                goToRight(index, counter+1, this.column.get(level), level, shortestPathResult);
                 if (level < ROWS && counter < result)
                 {
-                    goToLeft(index, counter+1, this.column.get(level), level, shortestPathResult);
-                    //goToRight(index+1, counter+1, this.column.get(level+1), level+1);
                     goDown(index, counter+1, this.column.get(level), level, shortestPathResult);
                 }
 
             }
         }
-        if(level == ROWS)
-        {
-            goToLeft(index, counter+1, this.column.get(level), level, shortestPathResult);
-            //goToRight(index+1, counter+1, this.column.get(level), level);
-        }
+    }
+
+    private boolean isIndexAtCharTarget(char charAtIndex)
+    {
+       return charAtIndex == TARGET; 
+    }
+
+    private boolean isIndexValidAndTraverseLessThanShortestPath(char charAtIndex, int counter)
+    {
+       return charAtIndex == VALID_INDEX && isTraverseLessThanShortestPath(counter); 
+    }
+
+    private boolean isTraverseLessThanShortestPath(int counter)
+    {
+        return counter < result;
     }
     private void printGrid()
     {
@@ -146,16 +171,16 @@ public class App
         test.add('*');
         
         List<Character> test2 = new ArrayList<>();
-        test2.add('0');
-        test2.add('0');
         test2.add('*');
+        test2.add('0');
+        test2.add('0');
         test2.add('0');
 
         List<Character> test3 = new ArrayList<>();
-        test3.add('0');
+        test3.add('*');
+        test3.add('*');
+        test3.add('*');
         test3.add('t');
-        test3.add('0');
-        test3.add('0');
 
         Map<Integer, List<Character>> temp = new HashMap<>();
 
@@ -167,6 +192,7 @@ public class App
 
         first.createGrid(4, temp);
 
+        first.printGrid();
         first.traverseGrid();
         first.printGrid();
     }
