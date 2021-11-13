@@ -46,7 +46,7 @@ public class App
                 //goToLeft(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult);
                 //goToRight(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult);
                 //goUp();
-                goDown(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult);
+                System.out.println(goDown(index, 1, this.column.get(sourceCell), sourceCell, shortestPathResult));
             }
             index++;
         }
@@ -54,8 +54,14 @@ public class App
 
     private Map<Integer, List<Integer>> goToLeft(int index, int counter, Node column, int level, Map<Integer, List<Integer>> shortestPathResult)
     {
-        Map<Integer, List<Integer>> shortestPathResultTemporary = new HashMap<>();
-        shortestPathResultTemporary.putAll(shortestPathResult);
+        Map<Integer, List<Integer>> shortestPathResultTemporaryLeft = new HashMap<>();
+        Map<Integer, List<Integer>> shortestPathResultTemporaryRight = new HashMap<>();
+        Map<Integer, List<Integer>> shortestPathResultTemporaryDown = new HashMap<>();
+        System.out.println(shortestPathResultTemporaryLeft);
+        shortestPathResultTemporaryLeft.putAll(shortestPathResult);
+        shortestPathResultTemporaryRight.putAll(shortestPathResult);
+        shortestPathResultTemporaryDown.putAll(shortestPathResult);
+        System.out.println(shortestPathResultTemporaryLeft);
         if (index > 0) 
         {
             index--;
@@ -64,6 +70,7 @@ public class App
             {
                 if (isTraverseLessThanShortestPath(counter))
                 {
+                    System.out.println("index: "+ index+"  level: "+level+"  counter: "+counter);
                     shortestPathResult.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
                     result = counter;
                     System.out.println(result);
@@ -74,20 +81,24 @@ public class App
             else if (isIndexValidAndTraverseLessThanShortestPath(charAtIndex, counter))
             {
                 System.out.println("index: "+ index+"  level: "+level+"  counter: "+counter);
-                shortestPathResultTemporary.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
-                Map<Integer, List<Integer>> left = goToLeft(index, counter+1, this.column.get(level), level, shortestPathResultTemporary);
-                Map<Integer, List<Integer>> down = goDown(index, counter+1, this.column.get(level), level, shortestPathResultTemporary);
-                if (!left.isEmpty())
+                shortestPathResultTemporaryLeft.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                shortestPathResultTemporaryRight.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                shortestPathResultTemporaryDown.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                System.out.println("d"+shortestPathResultTemporaryDown);
+                Map<Integer, List<Integer>> left = goToLeft(index, counter+1, this.column.get(level), level, shortestPathResultTemporaryLeft);
+                Map<Integer, List<Integer>> down = goDown(index, counter+1, this.column.get(level), level, shortestPathResultTemporaryDown);
+                if (left.size() < down.size())
                 {
-                    shortestPathResultTemporary.putAll(left);
+                    return left;
                 }
-                if (!down.isEmpty())
+                else
                 {
-                    shortestPathResultTemporary.putAll(down);
+                    shortestPathResultTemporaryDown.putAll(down);
+                    return down;
                 }
             }
         }
-        return shortestPathResultTemporary;
+        return new HashMap<>();
     }
 
     private void goToRight(int index, int counter, Node column, int level, Map<Integer, List<Integer>> shortestPathResult)
@@ -116,8 +127,13 @@ public class App
 
     private Map<Integer, List<Integer>> goDown(int index, int counter, Node column, int level, Map<Integer, List<Integer>> shortestPathResult)
     {
-        Map<Integer, List<Integer>> shortestPathResultTemporary = new HashMap<>();
-        shortestPathResultTemporary.putAll(shortestPathResult);
+        Map<Integer, List<Integer>> shortestPathResultTemporaryLeft = new HashMap<>();
+        Map<Integer, List<Integer>> shortestPathResultTemporaryRight = new HashMap<>();
+        Map<Integer, List<Integer>> shortestPathResultTemporaryDown = new HashMap<>();
+        shortestPathResultTemporaryLeft.putAll(shortestPathResult);
+        shortestPathResultTemporaryRight.putAll(shortestPathResult);
+        shortestPathResultTemporaryDown.putAll(shortestPathResult);
+        System.out.println("down "+shortestPathResultTemporaryDown);
         if (level < ROWS)
         {   
             level++;
@@ -137,20 +153,28 @@ public class App
             else if (isIndexValidAndTraverseLessThanShortestPath(charAtIndex, counter))
             {
                 System.out.println("index: "+ index+"  level: "+level+"  counter: "+counter);
-                shortestPathResultTemporary.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
-                Map<Integer, List<Integer>> down = goDown(index, counter+1, this.column.get(level), level, shortestPathResultTemporary);
-                Map<Integer, List<Integer>> left = goToLeft(index, counter+1, this.column.get(level), level, shortestPathResultTemporary);
-                if (!left.isEmpty())
+                shortestPathResultTemporaryLeft.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                shortestPathResultTemporaryRight.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                shortestPathResultTemporaryDown.computeIfAbsent(level, k -> new ArrayList<>()).add(index);
+                System.out.println("down "+shortestPathResultTemporaryDown);
+
+                Map<Integer, List<Integer>> down = goDown(index, counter+1, this.column.get(level), level, shortestPathResultTemporaryDown);
+                Map<Integer, List<Integer>> left = goToLeft(index, counter+1, this.column.get(level), level, shortestPathResultTemporaryLeft);
+                if (left.size() > down.size())
                 {
-                    shortestPathResultTemporary.putAll(left);
+                    System.out.println("apa");
+                    shortestPathResultTemporaryLeft.putAll(left);
+                    return left;
                 }
-                if (!down.isEmpty())
+                else
                 {
-                    shortestPathResultTemporary.putAll(down);
+                    System.out.println("apa2");
+                    shortestPathResultTemporaryDown.putAll(down);
+                    return down;
                 }
             }
         }
-        return shortestPathResultTemporary;
+        return new HashMap<>();
     }
 
     private boolean isIndexAtCharTarget(char charAtIndex)
@@ -184,7 +208,7 @@ public class App
         test.add('*');
         
         List<Character> test2 = new ArrayList<>();
-        test2.add('0');
+        test2.add('t');
         test2.add('0');
         test2.add('0');
         test2.add('0');
